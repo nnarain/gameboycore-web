@@ -1,5 +1,11 @@
 import os
 import subprocess
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument('-o', '--output', required=True, help='output')
+
+args = vars(parser.parse_args())
 
 # get this directory
 DIR = os.path.dirname(os.path.realpath(__file__))
@@ -21,6 +27,6 @@ for current_dir, dirs, files in os.walk(os.path.join(DIR, 'src')):
 cmd = 'em++ '
 for s in sources:
     cmd += (s + ' ')
-cmd += ' -Isrc/gameboycore/include/ -std=c++11 -D__LITTLEENDIAN__ -Wno-format-security -o test.html'
+cmd += ' -Isrc/gameboycore/include/ -std=c++11 -D__LITTLEENDIAN__ -Wno-format-security -o ' + args['output']
 
 subprocess.call(cmd, shell=True)
