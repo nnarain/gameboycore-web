@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(gameboycore-web)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set(EMSDK_ROOT $ENV{EMSCRIPTEN})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${EMSDK_ROOT}/cmake/Modules")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${EMSDK_ROOT}/cmake/Modules")
@@ -29,7 +31,8 @@ target_link_libraries(${PROJECT_NAME}
     # Link to GameboyCore
     gameboycore::gameboycore
 
-    # Specify html output
-    "-o ${PROJECT_NAME}.html"
+    # Specify that we are creating a library binding
+    "--bind"
 )
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE GAMEBOYCORE_STATIC=1)
