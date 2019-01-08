@@ -12,7 +12,12 @@
                 onRuntimeInitialized: function() {
                     console.log('GameboyCore module initialized');
 
+                    // Instaniate a GameboyCore
                     core = new Module.GameboyCore();
+                    // Set callback functions
+                    core.setScanlineCallback(function(scanline, linenum){
+                        console.log("Javascript scanline callback");
+                    });
                 }
             }
             var openFile = function(event) {
@@ -26,8 +31,19 @@
                     Module.HEAPU8.set(new Uint8Array(buffer), ptr);
 
                     console.log("Loading GameboyCore with ROM file data");
-                    console.log(core.loadROM(ptr, length));
+                    var load_successful = core.loadROM(ptr, length);
                     Module._free(ptr);
+
+                    if (load_successful)
+                    {
+                        console.log("Sucessfully loaded ROM file");
+
+                        core.emulateFrame();
+                    }
+                    else
+                    {
+                        console.log("Failed to load ROM file");
+                    }
                 };
 
                 console.log(input.files[0]);
