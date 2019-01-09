@@ -36,7 +36,6 @@ target_link_libraries(${PROJECT_NAME}
     "-s WASM=1"
     "-s DISABLE_EXCEPTION_CATCHING=0"
     "-s ALLOW_MEMORY_GROWTH=1"
-    "-g4"
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GAMEBOYCORE_STATIC=1)
