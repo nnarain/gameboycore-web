@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <vector>
 #include <cstdio>
 
 using namespace gb;
@@ -59,6 +60,7 @@ namespace
     private:
         void scanlineCallback(const GPU::Scanline& scanline, int line)
         {
+            //const std::vector<Pixel> data(scanline.begin(), scanline.end());
             scanline_callback_(scanline, line);
         }
 
@@ -66,6 +68,29 @@ namespace
 
         // Javascript callback objects
         emscripten::val scanline_callback_;
+    };
+
+    // Create a recursize template struct to initialize all the indices of the provided array
+    // This is done because emscripten::value_array::element requires a template int argument
+    
+    /**
+     * Template struct for initializing array elements
+    */
+    template<typename ArrayT, size_t N>
+    struct ArrayInitializer : public ArrayInitializer<ArrayT, N-1>
+    {
+        explicit ArrayInitializer(emscripten::value_array<ArrayT>& arr) : ArrayInitializer<ArrayT, N-1>{arr}
+        {
+            arr.element(emscripten::index<N-1>());
+        }
+    };
+
+    template<typename ArrayT>
+    struct ArrayInitializer<ArrayT, 0>
+    {
+        ArrayInitializer(emscripten::value_array<ArrayT>& arr)
+        {
+        }
     };
 }
 
@@ -80,7 +105,10 @@ EMSCRIPTEN_BINDINGS(gameboycore)
         .field("b", &Pixel::b);
 
     // Register array of Pixels as a Scanline
-    value_array<std::array<Pixel, 160>>("Scanline");
+    value_array<GPU::Scanline> scanline_value_array("Scanline");
+    ArrayInitializer<GPU::Scanline, std::tuple_size<GPU::Scanline>::value>{scanline_value_array};
+
+    register_vector<Pixel>("ScanlineVector");
 
     // Register scanline callback
     class_<GPU::RenderScanlineCallback>("ScanlineCallback")

@@ -16,7 +16,7 @@
                     core = new Module.GameboyCore();
                     // Set callback functions
                     core.setScanlineCallback(function(scanline, linenum){
-                        console.log("Javascript scanline callback");
+                        console.log("Scanline callback called! %d", linenum);
                     });
                 }
             }
