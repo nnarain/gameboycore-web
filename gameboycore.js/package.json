@@ -2,8 +2,11 @@
   "name": "gameboycore",
   "version": "0.0.1",
   "description": "Javascript bindings for GameboyCore",
+  "files": [
+    "dist/gameboycore.js",
+    "dist/gameboycore.wasm"
+  ],
   "scripts": {
-    "start": "./node_modules/.bin/http-server -a localhost -p 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +26,5 @@
   },
   "homepage": "https://github.com/nnarain/gameboycore-web",
   "devDependencies": {
-    "http-server": "^0.11.1"
   }
 }
