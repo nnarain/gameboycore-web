@@ -1,41 +1,126 @@
-#include <stdio.h>
-#include <SDL/SDL.h>
+#include <emscripten/bind.h>
+#include <gameboycore/gameboycore.h>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
+#include <memory>
+#include <string>
+#include <functional>
+#include <vector>
+#include <cstdio>
 
-extern "C" int main(int argc, char** argv) {
-  printf("hello, world!\n");
+using namespace gb;
 
-  SDL_Init(SDL_INIT_VIDEO);
-  SDL_Surface *screen = SDL_SetVideoMode(256, 256, 32, SDL_SWSURFACE);
+namespace
+{
+    class GameboyCoreJs
+    {
+    public:
+        GameboyCoreJs()
+            : core_{std::make_unique<GameboyCore>()}
+            , scanline_callback_{emscripten::val::null()}
+        {
+            core_->setScanlineCallback(std::bind(&GameboyCoreJs::scanlineCallback, this, std::placeholders::_1, std::placeholders::_2));
+        }
 
-#ifdef TEST_SDL_LOCK_OPTS
-  EM_ASM("SDL.defaults.copyOnLock = false; SDL.defaults.discardOnLock = true; SDL.defaults.opaqueFrontBuffer = false;");
-#endif
+        /**
+         * Emulate a single frame for the ROM file
+        */
+        void emulateFrame()
+        {
+            core_->emulateFrame();
+        }
 
-  if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
-  for (int i = 0; i < 256; i++) {
-    for (int j = 0; j < 256; j++) {
-#ifdef TEST_SDL_LOCK_OPTS
-      // Alpha behaves like in the browser, so write proper opaque pixels.
-      int alpha = 255;
-#else
-      // To emulate native behavior with blitting to screen, alpha component is ignored. Test that it is so by outputting
-      // data (and testing that it does get discarded)
-      int alpha = (i+j) % 255;
-#endif
-      *((Uint32*)screen->pixels + i * 256 + j) = SDL_MapRGBA(screen->format, i, j, 255-i, alpha);
-    }
-  }
-  if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
-  SDL_Flip(screen); 
+        void setScanlineCallback(emscripten::val fn)
+        {
+            scanline_callback_ = fn;
+        }
 
-  printf("you should see a smoothly-colored square - no sharp lines but the square borders!\n");
-  printf("and here is some text that should be HTML-friendly: amp: |&| double-quote: |\"| quote: |'| less-than, greater-than, html-like tags: |<cheez></cheez>|\nanother line.\n");
+        bool loadROM(const uintptr_t handle, size_t length)
+        {
+            try
+            {
+                const auto buffer = reinterpret_cast<const uint8_t*>(handle);
+                core_->loadROM(buffer, length);
+            }
+            catch(const std::runtime_error& e)
+            {
+                return false;
+            }
 
-  SDL_Quit();
+            return true;
+        }
 
-  return 0;
+        /**
+         * This must be explicitly called as emscripten does not guarantee the class destructor is called.
+        */
+        void release()
+        {
+            core_.reset();
+        }
+
+    private:
+        void scanlineCallback(const GPU::Scanline& scanline, int line)
+        {
+            //const std::vector<Pixel> data(scanline.begin(), scanline.end());
+            scanline_callback_(scanline, line);
+        }
+
+        std::unique_ptr<GameboyCore> core_;
+
+        // Javascript callback objects
+        emscripten::val scanline_callback_;
+    };
+
+    // Create a recursize template struct to initialize all the indices of the provided array
+    // This is done because emscripten::value_array::element requires a template int argument
+    
+    /**
+     * Template struct for initializing array elements
+    */
+    template<typename ArrayT, size_t N>
+    struct ArrayInitializer : public ArrayInitializer<ArrayT, N-1>
+    {
+        explicit ArrayInitializer(emscripten::value_array<ArrayT>& arr) : ArrayInitializer<ArrayT, N-1>{arr}
+        {
+            arr.element(emscripten::index<N-1>());
+        }
+    };
+
+    template<typename ArrayT>
+    struct ArrayInitializer<ArrayT, 0>
+    {
+        ArrayInitializer(emscripten::value_array<ArrayT>& arr)
+        {
+        }
+    };
 }
+
+EMSCRIPTEN_BINDINGS(gameboycore)
+{
+    using namespace emscripten;
+
+    // Register Pixel type
+    value_object<Pixel>("Pixel")
+        .field("r", &Pixel::r)
+        .field("g", &Pixel::g)
+        .field("b", &Pixel::b);
+
+    // Register array of Pixels as a Scanline
+    value_array<GPU::Scanline> scanline_value_array("Scanline");
+    ArrayInitializer<GPU::Scanline, std::tuple_size<GPU::Scanline>::value>{scanline_value_array};
+
+    register_vector<Pixel>("ScanlineVector");
+
+    // Register scanline callback
+    class_<GPU::RenderScanlineCallback>("ScanlineCallback")
+        .constructor<>()
+        .function("opcall", &GPU::RenderScanlineCallback::operator());
+
+    // Register GameboyCore wrapper
+    class_<GameboyCoreJs>("GameboyCore")
+        .constructor<>()
+        .function("release",             &GameboyCoreJs::release)
+        .function("loadROM",             &GameboyCoreJs::loadROM)
+        .function("emulateFrame",        &GameboyCoreJs::emulateFrame)
+        .function("setScanlineCallback", &GameboyCoreJs::setScanlineCallback);
+}
+

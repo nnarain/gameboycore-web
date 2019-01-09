@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>GameboyCore JS Test</title>
+    </head>
+    <body>
+        <input type='file' accept="text/plain" onchange="openFile(event)" />
+
+        <script>
+            var core = null;
+
+            var Module = {
+                onRuntimeInitialized: function() {
+                    console.log('GameboyCore module initialized');
+
+                    // Instaniate a GameboyCore
+                    core = new Module.GameboyCore();
+                    // Set callback functions
+                    core.setScanlineCallback(function(scanline, linenum){
+                        console.log("Scanline callback called! %d", linenum);
+                    });
+                }
+            }
+            var openFile = function(event) {
+                var input = event.target;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var buffer = reader.result;
+                    var length = buffer.byteLength;
+
+                    var ptr = Module._malloc(length);
+                    Module.HEAPU8.set(new Uint8Array(buffer), ptr);
+
+                    console.log("Loading GameboyCore with ROM file data");
+                    var load_successful = core.loadROM(ptr, length);
+                    Module._free(ptr);
+
+                    if (load_successful)
+                    {
+                        console.log("Sucessfully loaded ROM file");
+
+                        core.emulateFrame();
+                    }
+                    else
+                    {
+                        console.log("Failed to load ROM file");
+                    }
+                };
+
+                console.log(input.files[0]);
+                reader.readAsArrayBuffer(input.files[0]);
+            }
+        </script>
+        <script src="/build/gameboycore-web.js"></script>
+    </body>
+</html>
