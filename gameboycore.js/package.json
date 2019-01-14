@@ -2,10 +2,12 @@
   "name": "gameboycore",
   "version": "0.0.1",
   "description": "Javascript bindings for GameboyCore",
+  "main": "dist/gameboycore.js",
   "files": [
     "dist/gameboycore.js",
     "dist/gameboycore.wasm"
   ],
+  "types": "gameboycore.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
