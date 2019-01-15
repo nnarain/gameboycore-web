@@ -6,27 +6,28 @@ import gameboy_wasm from 'gameboycore/dist/gameboycore.wasm';
 import {GameboyCoreJS} from 'gameboycore';
 
 interface IAppState {
-    results: number;
-    core: GameboyCoreJS["GameboyCore"];
-    module: any;
+    core: GameboyCoreJS["GameboyCore"] | null;
 }
 
 class App extends React.Component<{}, IAppState> {
     constructor(props: any) {
         super(props);
-        this.state = {results: 0, core: null, module: null};
+        this.state = {core: null};
     }
     public render() {
         return (
-            <p>{this.state.results}</p>
+            <p>Emulator</p>
         );
     }
 
     public componentDidMount() {
+        this.initializeGameboyCoreRuntime();
+    }
+
+    private initializeGameboyCoreRuntime() {
         import('gameboycore').then(gb => {
             if (gb != null) {
-                this.setState({results: 1});
-                gb.default({
+                const runtime = gb.default({
                     locateFile: (filename: string, dir: string): string => {
                         if (filename === 'gameboycore.wasm') {
                             return gameboy_wasm;
@@ -36,14 +37,23 @@ class App extends React.Component<{}, IAppState> {
                         }
                     },
                     onRuntimeInitialized: () => {
-                        console.log('GameboyCoreJS Initialized');
+                        console.log('GameboyCoreJS runtime has been initialized');
+                        this.initializeCore(runtime);
                     }
-                })
-            }
-            else {
-                this.setState({results: 2});
+                });
             }
         });
+    }
+
+    private initializeCore(runtime: GameboyCoreJS) {
+        const core = new runtime.GameboyCore();
+        if (core != null) {
+            console.log('GameboyCore has been instantiated');
+        }
+        else {
+            console.log('Failed to instanitate GameboyCore object');
+        }
+        this.setState({core});
     }
 
 }
