@@ -9,6 +9,7 @@
   },
   "rules": {
     "no-console": false,
-    "no-string-literal": false
+    "no-string-literal": false,
+    "jsx-boolean-value": false
   }
 }

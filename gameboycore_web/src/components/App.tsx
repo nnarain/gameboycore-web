@@ -1,9 +1,10 @@
 import * as React from 'react';
 import './App.css';
 
-import gameboy_wasm from 'gameboycore/dist/gameboycore.wasm';
+import Grid from '@material-ui/core/Grid';
 
 import {GameboyCoreJS} from 'gameboycore';
+import gameboy_wasm from 'gameboycore/dist/gameboycore.wasm';
 
 interface IAppState {
     core: GameboyCoreJS["GameboyCore"] | null;
@@ -14,9 +15,14 @@ class App extends React.Component<{}, IAppState> {
         super(props);
         this.state = {core: null};
     }
+
     public render() {
         return (
-            <p>Emulator</p>
+            <Grid container spacing={24}>
+                <Grid item xs>
+                    <canvas width="800" height="600">Canvas not supported</canvas>
+                </Grid>
+            </Grid>
         );
     }
 
