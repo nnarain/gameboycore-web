@@ -1,7 +1,10 @@
 import * as React from 'react';
 import './App.css';
 
-import Grid from '@material-ui/core/Grid';
+import ControlPanel from './controlpanel/ControlPanel';
+import Display from './display/Display';
+
+import {Grid} from 'semantic-ui-react';
 
 import {GameboyCoreJS} from 'gameboycore';
 import gameboy_wasm from 'gameboycore/dist/gameboycore.wasm';
@@ -18,10 +21,23 @@ class App extends React.Component<{}, IAppState> {
 
     public render() {
         return (
-            <Grid container spacing={24}>
-                <Grid item xs>
-                    <canvas width="800" height="600">Canvas not supported</canvas>
-                </Grid>
+            <Grid columns={3} divided >
+                <Grid.Row>
+                    <Grid.Column>
+                        <p>Catalouge</p>
+                    </Grid.Column>
+                    <Grid.Column>
+                        <Grid.Row>
+                            <Display core={this.state.core} />
+                        </Grid.Row>
+                        <Grid.Row>
+                            <ControlPanel />
+                        </Grid.Row>
+                    </Grid.Column>
+                    <Grid.Column>
+                        <p>Empty</p>
+                    </Grid.Column>
+                </Grid.Row>
             </Grid>
         );
     }

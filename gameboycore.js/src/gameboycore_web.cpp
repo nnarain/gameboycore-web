@@ -17,8 +17,10 @@ namespace
         GameboyCoreJs()
             : core_{std::make_unique<GameboyCore>()}
             , scanline_callback_{emscripten::val::null()}
+            , vblank_callback_{emscripten::val::null()}
         {
             core_->setScanlineCallback(std::bind(&GameboyCoreJs::scanlineCallback, this, std::placeholders::_1, std::placeholders::_2));
+            core_->setVBlankCallback(std::bind(&GameboyCoreJs::vblankCallback, this));
         }
 
         /**
@@ -29,17 +31,33 @@ namespace
             core_->emulateFrame();
         }
 
+        /**
+         * Set callback for GPU scanlines
+        */
         void setScanlineCallback(emscripten::val fn)
         {
             scanline_callback_ = fn;
         }
 
-        bool loadROM(const uintptr_t handle, size_t length)
+        /**
+         * Set callback for VBlank
+        */
+        void setVBlankCallback(emscripten::val fn)
+        {
+            vblank_callback_ = fn;
+        }
+
+        /**
+         * Load a ROM buffer into the core
+         * @param handle Handle to ROM buffer
+         * @param size Size of the buffer
+        */
+        bool loadROM(const uintptr_t handle, size_t size)
         {
             try
             {
                 const auto buffer = reinterpret_cast<const uint8_t*>(handle);
-                core_->loadROM(buffer, length);
+                core_->loadROM(buffer, size);
             }
             catch(const std::runtime_error& e)
             {
@@ -58,21 +76,33 @@ namespace
         }
 
     private:
+        /**
+         * Internal scanline callback forwards call to emscripten
+        */
         void scanlineCallback(const GPU::Scanline& scanline, int line)
         {
-            //const std::vector<Pixel> data(scanline.begin(), scanline.end());
             scanline_callback_(scanline, line);
         }
 
+        /**
+         * Internal scanline callback forwards call to emscripten
+        */
+        void vblankCallback()
+        {
+            vblank_callback_();
+        }
+
+        // GameboyCore resource
         std::unique_ptr<GameboyCore> core_;
 
         // Javascript callback objects
         emscripten::val scanline_callback_;
+        emscripten::val vblank_callback_;
     };
 
     // Create a recursize template struct to initialize all the indices of the provided array
     // This is done because emscripten::value_array::element requires a template int argument
-    
+
     /**
      * Template struct for initializing array elements
     */
@@ -88,7 +118,7 @@ namespace
     template<typename ArrayT>
     struct ArrayInitializer<ArrayT, 0>
     {
-        ArrayInitializer(emscripten::value_array<ArrayT>& arr)
+        explicit ArrayInitializer(emscripten::value_array<ArrayT>& arr)
         {
         }
     };
@@ -121,6 +151,7 @@ EMSCRIPTEN_BINDINGS(gameboycore)
         .function("release",             &GameboyCoreJs::release)
         .function("loadROM",             &GameboyCoreJs::loadROM)
         .function("emulateFrame",        &GameboyCoreJs::emulateFrame)
-        .function("setScanlineCallback", &GameboyCoreJs::setScanlineCallback);
+        .function("setScanlineCallback", &GameboyCoreJs::setScanlineCallback)
+        .function("setVBlankCallback",   &GameboyCoreJs::setVBlankCallback);
 }
 
