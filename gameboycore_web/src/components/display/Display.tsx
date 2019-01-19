@@ -32,12 +32,14 @@ class Display extends React.Component<IProps, {}> {
     }
 
     private scanlineCallback(scanline: Array<GameboyCoreJS['Pixel']>, line: number) {
+        console.log('Scanline callback');
         scanline.forEach((pixel: GameboyCoreJS["Pixel"], x: number) =>{
             imagemanip.putPixel(this.imageData, pixel, x, line);
         });
     }
 
     private vblankCallback() {
+        console.log("Vblank callback");
         // Get the canvas context
         const canvas = $("display")[0] as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');

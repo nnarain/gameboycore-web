@@ -16,7 +16,9 @@ declare module "gameboycore" {
 
     export interface GameboyCoreJS {
         GameboyCore: GameboyCore;
-        Pixel: Pixel
+        Pixel: Pixel,
+
+        loadFromArrayBuffer(core: GameboyCore, buffer: ArrayBuffer, length: number): boolean;
     }
 
     export default function Module(emscriptenArgs: any): GameboyCoreJS;

@@ -10,13 +10,14 @@ import {GameboyCoreJS} from 'gameboycore';
 import gameboy_wasm from 'gameboycore/dist/gameboycore.wasm';
 
 interface IAppState {
+    gbjs: GameboyCoreJS | null;
     core: GameboyCoreJS["GameboyCore"] | null;
 }
 
 class App extends React.Component<{}, IAppState> {
     constructor(props: any) {
         super(props);
-        this.state = {core: null};
+        this.state = {core: null, gbjs: null};
     }
 
     public render() {
@@ -31,7 +32,7 @@ class App extends React.Component<{}, IAppState> {
                             <Display core={this.state.core} />
                         </Grid.Row>
                         <Grid.Row>
-                            <ControlPanel />
+                            <ControlPanel core={this.state.core} gbjs={this.state.gbjs} />
                         </Grid.Row>
                     </Grid.Column>
                     <Grid.Column>
@@ -63,6 +64,8 @@ class App extends React.Component<{}, IAppState> {
                         this.initializeCore(runtime);
                     }
                 });
+
+                this.setState({gbjs: runtime});
             }
         });
     }
