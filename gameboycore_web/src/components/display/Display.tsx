@@ -19,29 +19,27 @@ class Display extends React.Component<IProps, {}> {
     constructor(props: any) {
         super(props);
 
-        if (this.props.core != null) {
-            this.props.core.setScanlineCallback(this.scanlineCallback);
-            this.props.core.setVBlankCallback(this.vblankCallback);
-        }
+        this.intializeCoreCallbacks = this.intializeCoreCallbacks.bind(this);
+        this.scanlineCallback = this.scanlineCallback.bind(this);
+        this.vblankCallback = this.vblankCallback.bind(this);
     }
 
     public render() {
+        this.intializeCoreCallbacks();
         return (
-            <canvas id={"display"} width={800} height={600}>Canvas not supported</canvas>
+            <canvas id={"display"} width={640} height={420}>Canvas not supported</canvas>
         );
     }
 
     private scanlineCallback(scanline: Array<GameboyCoreJS['Pixel']>, line: number) {
-        console.log('Scanline callback');
         scanline.forEach((pixel: GameboyCoreJS["Pixel"], x: number) =>{
             imagemanip.putPixel(this.imageData, pixel, x, line);
         });
     }
 
     private vblankCallback() {
-        console.log("Vblank callback");
         // Get the canvas context
-        const canvas = $("display")[0] as HTMLCanvasElement;
+        const canvas = $("#display")[0] as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
 
         if (ctx != null) {
@@ -53,8 +51,15 @@ class Display extends React.Component<IProps, {}> {
             // Put the display data into the new canvas
             newCanvas.getContext('2d')!.putImageData(this.imageData, 0, 0);
 
-            ctx.scale(canvas.width / newCanvas.width, canvas.height / newCanvas.height);
-            ctx.drawImage(newCanvas, 0, 0);
+            ctx.drawImage(newCanvas, 0, 0, newCanvas.width, newCanvas.height, 0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    private intializeCoreCallbacks() {
+        if (this.props.core != null) {
+            console.log("Setting display callbacks");
+            this.props.core.setScanlineCallback(this.scanlineCallback);
+            this.props.core.setVBlankCallback(this.vblankCallback);
         }
     }
 }

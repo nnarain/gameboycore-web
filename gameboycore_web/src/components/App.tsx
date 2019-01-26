@@ -18,6 +18,9 @@ class App extends React.Component<{}, IAppState> {
     constructor(props: any) {
         super(props);
         this.state = {core: null, gbjs: null};
+
+        this.animate = this.animate.bind(this);
+        this.onGameboyCoreLoadROM = this.onGameboyCoreLoadROM.bind(this);
     }
 
     public render() {
@@ -32,7 +35,7 @@ class App extends React.Component<{}, IAppState> {
                             <Display core={this.state.core} />
                         </Grid.Row>
                         <Grid.Row>
-                            <ControlPanel core={this.state.core} gbjs={this.state.gbjs} />
+                            <ControlPanel core={this.state.core} gbjs={this.state.gbjs} onLoad={this.onGameboyCoreLoadROM}/>
                         </Grid.Row>
                     </Grid.Column>
                     <Grid.Column>
@@ -45,6 +48,23 @@ class App extends React.Component<{}, IAppState> {
 
     public componentDidMount() {
         this.initializeGameboyCoreRuntime();
+    }
+
+    private animate() {
+        if (this.state.core != null) {
+            this.state.core.emulateFrame();
+        }
+        requestAnimationFrame(this.animate);
+    }
+
+
+    private onGameboyCoreLoadROM() {
+        console.log("ROM was loaded into GameboyCore");
+        console.log("Forcing re-render to pass core into display and control panel...");
+        this.forceUpdate();
+
+        // start animation loop
+        this.animate();
     }
 
     private initializeGameboyCoreRuntime() {
