@@ -68,6 +68,14 @@ namespace
         }
 
         /**
+         * Input
+        */
+        void input(Joy::Key key, bool pressed)
+        {
+            core_->input(key, pressed);
+        }
+
+        /**
          * This must be explicitly called as emscripten does not guarantee the class destructor is called.
         */
         void release()
@@ -145,6 +153,17 @@ EMSCRIPTEN_BINDINGS(gameboycore)
         .constructor<>()
         .function("opcall", &GPU::RenderScanlineCallback::operator());
 
+    // KeyCode
+    enum_<Joy::Key>("GBKey")
+        .value("UP", Joy::Key::UP)
+        .value("DOWN", Joy::Key::DOWN)
+        .value("LEFT", Joy::Key::LEFT)
+        .value("RIGHT", Joy::Key::RIGHT)
+        .value("A", Joy::Key::A)
+        .value("B", Joy::Key::B)
+        .value("START", Joy::Key::START)
+        .value("SELECT", Joy::Key::SELECT);
+
     // Register GameboyCore wrapper
     class_<GameboyCoreJs>("GameboyCore")
         .constructor<>()
@@ -152,6 +171,7 @@ EMSCRIPTEN_BINDINGS(gameboycore)
         .function("loadROM",             &GameboyCoreJs::loadROM)
         .function("emulateFrame",        &GameboyCoreJs::emulateFrame)
         .function("setScanlineCallback", &GameboyCoreJs::setScanlineCallback)
-        .function("setVBlankCallback",   &GameboyCoreJs::setVBlankCallback);
+        .function("setVBlankCallback",   &GameboyCoreJs::setVBlankCallback)
+        .function("input",               &GameboyCoreJs::input);
 }
 

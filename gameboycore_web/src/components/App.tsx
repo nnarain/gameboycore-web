@@ -82,6 +82,7 @@ class App extends React.Component<{}, IAppState> {
                     onRuntimeInitialized: () => {
                         console.log('GameboyCoreJS runtime has been initialized');
                         this.initializeCore(runtime);
+                        console.log(runtime);
                     }
                 });
 
