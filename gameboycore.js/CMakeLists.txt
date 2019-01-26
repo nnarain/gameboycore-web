@@ -37,6 +37,7 @@ target_link_libraries(${PROJECT_NAME}
     "-s WASM=1"
     "-s MODULARIZE=1"
     "-s EXPORT_ES6=1"
+    "--post-js ${CMAKE_CURRENT_SOURCE_DIR}/src/js/post.js"
     "-s DISABLE_EXCEPTION_CATCHING=0"
     "-s ALLOW_MEMORY_GROWTH=1"
 )
