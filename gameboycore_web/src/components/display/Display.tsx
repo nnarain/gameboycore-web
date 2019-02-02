@@ -8,6 +8,8 @@ import * as imagemanip from 'ts/imagemanip';
 
 const SCREEN_WIDTH = 160;
 const SCREEN_HEIGHT = 144;
+const ASPECT_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT;
+
 
 interface IProps {
     core: GameboyCoreJS['GameboyCore'] | null;
@@ -27,8 +29,22 @@ class Display extends React.Component<IProps, {}> {
     public render() {
         this.intializeCoreCallbacks();
         return (
-            <canvas id={"display"} width={640} height={420}>Canvas not supported</canvas>
+            <div id="display_parent">
+                <canvas id={"display"} width={"auto"} height={"100%"}>Canvas not supported</canvas>
+            </div>
         );
+    }
+
+    public componentWillMount() {
+        console.log($("#display").width());
+    }
+
+    public componentDidMount() {
+        const w = $("#display_parent").width() as number;
+        const h = w / ASPECT_RATIO;
+
+        $("#display").width(w);
+        $("#display").height(h);
     }
 
     private scanlineCallback(scanline: Array<GameboyCoreJS['Pixel']>, line: number) {
