@@ -25,6 +25,7 @@ declare module "gameboycore" {
         loadROM(handle: number, length: number): void;
         setScanlineCallback(callback: (scanline: Pixel[], line: number) => void): void;
         setVBlankCallback(callback: () => void): void;
+        setAudioSampleCallback(callback: (s1: number, s2: number) => void): void;
         emulateFrame(): void;
         input(key: GBKey, pressed: boolean): void;
         release(): void;

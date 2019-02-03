@@ -18,9 +18,12 @@ namespace
             : core_{std::make_unique<GameboyCore>()}
             , scanline_callback_{emscripten::val::null()}
             , vblank_callback_{emscripten::val::null()}
+            , audio_callback_{emscripten::val::null()}
         {
-            core_->setScanlineCallback(std::bind(&GameboyCoreJs::scanlineCallback, this, std::placeholders::_1, std::placeholders::_2));
+            using namespace std::placeholders;
+            core_->setScanlineCallback(std::bind(&GameboyCoreJs::scanlineCallback, this, _1, _2));
             core_->setVBlankCallback(std::bind(&GameboyCoreJs::vblankCallback, this));
+            core_->setAudioSampleCallback(std::bind(&GameboyCoreJs::audioSampleCallback, this, _1, _2));
         }
 
         /**
@@ -45,6 +48,14 @@ namespace
         void setVBlankCallback(emscripten::val fn)
         {
             vblank_callback_ = fn;
+        }
+
+        /**
+         * Audio Callback
+        */
+        void setAudioSampleCallback(emscripten::val fn)
+        {
+            audio_callback_ = fn;
         }
 
         /**
@@ -100,12 +111,21 @@ namespace
             vblank_callback_();
         }
 
+        /**
+         * Interal audio sample callback
+        */
+        void audioSampleCallback(int16_t s1, int16_t s2)
+        {
+            audio_callback_(s1, s2);
+        }
+
         // GameboyCore resource
         std::unique_ptr<GameboyCore> core_;
 
         // Javascript callback objects
         emscripten::val scanline_callback_;
         emscripten::val vblank_callback_;
+        emscripten::val audio_callback_;
     };
 
     // Create a recursize template struct to initialize all the indices of the provided array
@@ -167,11 +187,12 @@ EMSCRIPTEN_BINDINGS(gameboycore)
     // Register GameboyCore wrapper
     class_<GameboyCoreJs>("GameboyCore")
         .constructor<>()
-        .function("release",             &GameboyCoreJs::release)
-        .function("loadROM",             &GameboyCoreJs::loadROM)
-        .function("emulateFrame",        &GameboyCoreJs::emulateFrame)
-        .function("setScanlineCallback", &GameboyCoreJs::setScanlineCallback)
-        .function("setVBlankCallback",   &GameboyCoreJs::setVBlankCallback)
-        .function("input",               &GameboyCoreJs::input);
+        .function("release",                &GameboyCoreJs::release)
+        .function("loadROM",                &GameboyCoreJs::loadROM)
+        .function("emulateFrame",           &GameboyCoreJs::emulateFrame)
+        .function("setScanlineCallback",    &GameboyCoreJs::setScanlineCallback)
+        .function("setVBlankCallback",      &GameboyCoreJs::setVBlankCallback)
+        .function("setAudioSampleCallback", &GameboyCoreJs::setAudioSampleCallback)
+        .function("input",                  &GameboyCoreJs::input);
 }
 
