@@ -1,0 +1,7 @@
+*/build/*
+*/node_modules/*
+
+*/dist/gameboycore.js
+*/dist/gameboycore.wasm
+
+*.a

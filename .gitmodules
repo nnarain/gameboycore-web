@@ -1,0 +1,3 @@
+[submodule "src/gameboycore"]
+	path = gameboycore.js/src/external/gameboycore
+	url = https://github.com/nnarain/gameboycore.git

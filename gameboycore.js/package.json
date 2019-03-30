@@ -1,0 +1,32 @@
+{
+  "name": "gameboycore",
+  "version": "0.0.1",
+  "description": "Javascript bindings for GameboyCore",
+  "main": "dist/gameboycore.js",
+  "files": [
+    "dist/gameboycore.js",
+    "dist/gameboycore.wasm"
+  ],
+  "types": "gameboycore.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nnarain/gameboycore-web.git"
+  },
+  "keywords": [
+    "gameboy",
+    "gameboy-color",
+    "emulator",
+    "emulation"
+  ],
+  "author": "Natesh Narain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nnarain/gameboycore-web/issues"
+  },
+  "homepage": "https://github.com/nnarain/gameboycore-web",
+  "devDependencies": {
+  }
+}
